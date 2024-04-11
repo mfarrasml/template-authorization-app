@@ -1,11 +1,11 @@
 -- Create new database
-CREATE DATABASE user_db;
+CREATE DATABASE authorization_test_db;
 
 -- DDL
 CREATE TABLE users(
     id BIGSERIAL,
     user_name VARCHAR,
-    email VARCHAR,
+    email VARCHAR UNIQUE,
     password VARCHAR,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -13,7 +13,5 @@ CREATE TABLE users(
 );
 
 -- DML
-UPDATE users
-SET user_name='John Doe', 
-    email='john.doe@mail.com', 
-    password='$2a$12$W3/W6PWvPnWVjTCtxFiQn.7yRLiwn.ds1MPc.O6dD0b9gUV3puZ8S';
+INSERT INTO users(user_name, email, password)
+VALUES ('John Doe', 'john.doe@mail.com', '$2a$12$ahXEFxFGDIeO3QC5CfB/DuO0EQ8W60KsLGIYkzgX3Bt3luiE0rdUy');
