@@ -2,8 +2,8 @@ package usecase
 
 import (
 	"context"
-	"errors"
 
+	"github.com/mfarrasml/template-authorization-app/apperror"
 	"github.com/mfarrasml/template-authorization-app/repository"
 	"github.com/mfarrasml/template-authorization-app/util"
 )
@@ -28,18 +28,21 @@ func NewUserUcImpl(userRepo repository.UserRepository, passwordUtil util.Passwor
 
 func (u *UserUcImpl) UserLogin(ctx context.Context, email string, password string) (*string, error) {
 	user, err := u.userRepo.FindOneByEmail(ctx, email)
-	if err != nil {
+	if err == apperror.ErrEmailNotFound {
 		return nil, err
+	}
+	if err != nil {
+		return nil, apperror.ErrInternalServer
 	}
 
 	err = u.passwordUtil.ComparePwdWithHash(password, []byte(user.Password))
 	if err != nil {
-		return nil, errors.New("incorrect password")
+		return nil, apperror.ErrWrongPassword
 	}
 
 	token, err := u.tokenUtil.NewAuthToken(email)
 	if err != nil {
-		return nil, err
+		return nil, apperror.ErrAccessToken
 	}
 	return &token, nil
 }

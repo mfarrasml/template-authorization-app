@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,13 +22,13 @@ func (h *UserHandler) UserLogin(ctx *gin.Context) {
 	req := dto.UserLoginRequest{}
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		log.Println(err)
+		ctx.Error(err)
 		return
 	}
 
 	token, err := h.userUc.UserLogin(ctx, req.Email, req.Password)
 	if err != nil {
-		log.Println(err)
+		ctx.Error(err)
 		return
 	}
 

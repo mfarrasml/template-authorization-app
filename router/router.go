@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/mfarrasml/template-authorization-app/handler"
+	"github.com/mfarrasml/template-authorization-app/middleware"
 )
 
 type HandlerOpt struct {
@@ -14,6 +15,7 @@ func NewRouter(opt HandlerOpt) *gin.Engine {
 	router.ContextWithFallback = true
 
 	router.Use(gin.Recovery(), gin.Logger())
+	router.Use(middleware.ErrorHandler())
 
 	router.POST("/auth/login", opt.userHandler.UserLogin)
 
