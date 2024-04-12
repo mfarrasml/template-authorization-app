@@ -13,11 +13,15 @@ type HandlerOpt struct {
 func NewRouter(opt HandlerOpt) *gin.Engine {
 	router := gin.New()
 	router.ContextWithFallback = true
+	router.HandleMethodNotAllowed = true
 
 	router.Use(gin.Recovery(), gin.Logger())
 	router.Use(middleware.ErrorHandler())
 
 	router.POST("/auth/login", opt.userHandler.UserLogin)
+
+	router.NoRoute(handler.NoRouteHandler())
+	router.NoMethod(handler.NoMethodHandler())
 
 	return router
 }

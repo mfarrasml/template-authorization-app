@@ -20,4 +20,14 @@ var (
 		err:  "error generating access token",
 		code: 4,
 	}
+
+	ErrNoRoute = &AppError{
+		err:  "route not found",
+		code: 40,
+	}
+
+	ErrNoMethod = &AppError{
+		err:  "method not allowed",
+		code: 41,
+	}
 )

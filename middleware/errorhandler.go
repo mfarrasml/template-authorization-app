@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,13 +13,20 @@ func ErrorHandler() gin.HandlerFunc {
 		ctx.Next()
 
 		for _, err := range ctx.Errors {
-			log.Println(err.Error())
 			switch err.Err {
 			case apperror.ErrEmailNotFound:
 				fallthrough
 			case apperror.ErrWrongPassword:
 				ctx.AbortWithStatusJSON(http.StatusBadRequest, dto.Response{
 					Msg: "wrong email or password",
+				})
+			case apperror.ErrNoRoute:
+				ctx.AbortWithStatusJSON(http.StatusNotFound, dto.Response{
+					Msg: apperror.ErrNoRoute.Error(),
+				})
+			case apperror.ErrNoMethod:
+				ctx.AbortWithStatusJSON(http.StatusMethodNotAllowed, dto.Response{
+					Msg: apperror.ErrNoMethod.Error(),
 				})
 			default:
 				ctx.AbortWithStatusJSON(http.StatusInternalServerError, dto.Response{
