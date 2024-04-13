@@ -16,9 +16,10 @@ import (
 func ServeRouter(db *sql.DB, config config.Config) error {
 	pwdUtil := util.NewBcryptHasherUtil(config.BcryptCost())
 	tokenUtil := util.NewJwtTokenUtil(util.JwtTokenOpts{
-		Secret:     config.JwtSecret(),
-		Issuer:     config.JwtIssuer(),
-		ExpMinutes: config.JwtExpiry(),
+		Secret:           config.JwtSecret(),
+		Issuer:           config.JwtIssuer(),
+		AccTknExpMinutes: config.JwtAccTknExpiry(),
+		RefTknExpMinutes: config.JwtRefTknExpiry(),
 	})
 
 	userRepo := repository.NewUserRepoPostgres(db)

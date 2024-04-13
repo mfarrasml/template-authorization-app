@@ -9,13 +9,14 @@ import (
 )
 
 type Config struct {
-	dbUrl      string
-	jwtSecret  string
-	jwtIssuer  string
-	jwtExpiry  int
-	bcryptCost int
-	host       string
-	port       int
+	dbUrl           string
+	jwtSecret       string
+	jwtIssuer       string
+	jwtAccTknExpiry int
+	jwtRefTknExpiry int
+	bcryptCost      int
+	host            string
+	port            int
 }
 
 func LoadConfig() (*Config, error) {
@@ -24,9 +25,14 @@ func LoadConfig() (*Config, error) {
 		return nil, errors.New("error loading environment")
 	}
 
-	expiry, err := strconv.Atoi(os.Getenv("JWT_AUTH_TOKEN_EXPIRY_MINUTES"))
+	accExp, err := strconv.Atoi(os.Getenv("JWT_ACCESS_TOKEN_EXPIRY_MINUTES"))
 	if err != nil {
-		return nil, errors.New("error loading jwt expiry env value")
+		return nil, errors.New("error loading jwt access token expiry env value")
+	}
+
+	refExp, err := strconv.Atoi(os.Getenv("JWT_REFRESH_TOKEN_EXPIRY_MINUTES"))
+	if err != nil {
+		return nil, errors.New("error loading jwt refresh token expiry env value")
 	}
 
 	cost, err := strconv.Atoi(os.Getenv("BCRYPT_COST"))
@@ -40,13 +46,14 @@ func LoadConfig() (*Config, error) {
 	}
 
 	config := Config{
-		dbUrl:      os.Getenv("DB_URL"),
-		jwtSecret:  os.Getenv("JWT_SECRET"),
-		jwtIssuer:  os.Getenv("ISSUER"),
-		jwtExpiry:  expiry,
-		bcryptCost: cost,
-		host:       os.Getenv("ROUTER_HOST"),
-		port:       port,
+		dbUrl:           os.Getenv("DB_URL"),
+		jwtSecret:       os.Getenv("JWT_SECRET"),
+		jwtIssuer:       os.Getenv("ISSUER"),
+		jwtAccTknExpiry: accExp,
+		jwtRefTknExpiry: refExp,
+		bcryptCost:      cost,
+		host:            os.Getenv("ROUTER_HOST"),
+		port:            port,
 	}
 
 	return &config, nil
@@ -65,8 +72,12 @@ func (c *Config) JwtIssuer() string {
 	return c.jwtIssuer
 }
 
-func (c *Config) JwtExpiry() int {
-	return c.jwtExpiry
+func (c *Config) JwtAccTknExpiry() int {
+	return c.jwtAccTknExpiry
+}
+
+func (c *Config) JwtRefTknExpiry() int {
+	return c.jwtRefTknExpiry
 }
 
 func (c *Config) BcryptCost() int {
