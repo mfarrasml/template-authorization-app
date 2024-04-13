@@ -14,7 +14,7 @@ CREATE TABLE users(
 
 CREATE TABLE refresh_tokens(
     id BIGSERIAL,
-    token VARCHAR,
+    jti VARCHAR,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP

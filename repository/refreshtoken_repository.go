@@ -9,7 +9,7 @@ import (
 
 type RefreshTokenRepository interface {
 	FindOneById(ctx context.Context, id int) (*string, error)
-	CreateOne(ctx context.Context, token string) error
+	CreateOne(ctx context.Context, jti string) error
 }
 
 type RefreshTokenRepoPostgres struct {
@@ -39,13 +39,13 @@ func (r *RefreshTokenRepoPostgres) FindOneById(ctx context.Context, id int) (*st
 	return &refreshToken, nil
 }
 
-func (r *RefreshTokenRepoPostgres) CreateOne(ctx context.Context, token string) error {
+func (r *RefreshTokenRepoPostgres) CreateOne(ctx context.Context, jti string) error {
 	q := `
-		INSERT INTO refresh_tokens(token)
+		INSERT INTO refresh_tokens(jti)
 		VALUES ($1);
 	`
 
-	_, err := r.db.ExecContext(ctx, q, token)
+	_, err := r.db.ExecContext(ctx, q, jti)
 	if err != nil {
 		return apperror.ErrInternalServer
 	}
