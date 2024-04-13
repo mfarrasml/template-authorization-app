@@ -8,12 +8,14 @@ type UserLoginRequest struct {
 }
 
 type UserLoginResponse struct {
-	Token string `json:"token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
-func NewUserLoginResponse(token string) UserLoginResponse {
+func NewUserLoginResponse(accToken string, refToken string) UserLoginResponse {
 	return UserLoginResponse{
-		Token: token,
+		AccessToken:  accToken,
+		RefreshToken: refToken,
 	}
 }
 

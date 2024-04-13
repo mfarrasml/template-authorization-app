@@ -23,7 +23,15 @@ func ServeRouter(db *sql.DB, config config.Config) error {
 	})
 
 	userRepo := repository.NewUserRepoPostgres(db)
-	userUc := usecase.NewUserUcImpl(userRepo, pwdUtil, tokenUtil)
+	refTknRepo := repository.NewRefreshTokenRepoPostgres(db)
+
+	userUcOpt := usecase.UserUcImplOpt{
+		UserRepo:         userRepo,
+		RefreshTokenRepo: refTknRepo,
+		PasswordUtil:     pwdUtil,
+		TokenUtil:        tokenUtil,
+	}
+	userUc := usecase.NewUserUcImpl(userUcOpt)
 	userHandler := handler.NewUserHandler(userUc)
 
 	opt := HandlerOpt{

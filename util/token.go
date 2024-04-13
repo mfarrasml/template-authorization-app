@@ -5,12 +5,13 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	uuid "github.com/satori/go.uuid"
 )
 
 type TokenUtil interface {
 	NewAuthToken(id int, email string) (string, error)
 	ParseAuthToken(tokenString string) (*UserAuthClaims, error)
-	NewRefreshToken(id int) (string, error)
+	NewRefreshToken(id int) (refToken string, jti string, err error)
 	ParseRefreshToken(tokenString string) (*UserRefreshClaims, error)
 }
 
@@ -38,19 +39,19 @@ func NewJwtTokenUtil(opt JwtTokenOpts) *jwtTokenUtil {
 }
 
 type UserAuthClaims struct {
-	Id    int    `json:"id"`
-	Email string `json:"email"`
+	UserId int    `json:"id"`
+	Email  string `json:"email"`
 	jwt.RegisteredClaims
 }
 type UserRefreshClaims struct {
-	Id int `json:"id"`
+	UserId int `json:"id"`
 	jwt.RegisteredClaims
 }
 
 func (t *jwtTokenUtil) NewAuthToken(id int, email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, UserAuthClaims{
-		Id:    id,
-		Email: email,
+		UserId: id,
+		Email:  email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    t.issuer,
@@ -86,10 +87,13 @@ func (t *jwtTokenUtil) ParseAuthToken(tokenString string) (*UserAuthClaims, erro
 	return claims, err
 }
 
-func (t *jwtTokenUtil) NewRefreshToken(id int) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, UserAuthClaims{
-		Id: id,
+func (t *jwtTokenUtil) NewRefreshToken(id int) (refToken string, jti string, err error) {
+	jti = uuid.NewV4().String()
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, UserRefreshClaims{
+		UserId: id,
 		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        jti,
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    t.issuer,
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(t.refTknExpMinutes) * time.Minute)),
@@ -98,10 +102,10 @@ func (t *jwtTokenUtil) NewRefreshToken(id int) (string, error) {
 
 	signed, err := token.SignedString([]byte(t.secret))
 	if err != nil {
-		return "", errors.New("error signing JWT claims")
+		return "", "", errors.New("error signing JWT claims")
 	}
 
-	return signed, nil
+	return signed, jti, nil
 }
 
 func (t *jwtTokenUtil) ParseRefreshToken(tokenString string) (*UserRefreshClaims, error) {

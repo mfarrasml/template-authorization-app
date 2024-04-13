@@ -30,7 +30,7 @@ func (h *UserHandler) UserLogin(ctx *gin.Context) {
 		return
 	}
 
-	token, err := h.userUc.UserLogin(ctx, req.Email, req.Password)
+	accToken, refToken, err := h.userUc.UserLogin(ctx, req.Email, req.Password)
 	if err != nil {
 		ctx.Error(err)
 		return
@@ -38,7 +38,7 @@ func (h *UserHandler) UserLogin(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, dto.Response{
 		Msg:  "ok",
-		Data: dto.NewUserLoginResponse(*token),
+		Data: dto.NewUserLoginResponse(*accToken, *refToken),
 	})
 }
 
@@ -56,7 +56,7 @@ func (h *UserHandler) GetOneAuthorizedUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := h.userUc.GetOneById(ctx, id, claims.Id)
+	user, err := h.userUc.GetOneById(ctx, id, claims.UserId)
 	if err != nil {
 		ctx.Error(err)
 		return
