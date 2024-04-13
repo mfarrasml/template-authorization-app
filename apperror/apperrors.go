@@ -21,6 +21,16 @@ var (
 		code: 4,
 	}
 
+	ErrRefreshTokenNotFound = &AppError{
+		err:  "refresh token not found",
+		code: 5,
+	}
+
+	ErrInvalidRefreshToken = &AppError{
+		err:  "invalid refresh token",
+		code: 6,
+	}
+
 	ErrInvalidUserId = &AppError{
 		err:  "invalid user id",
 		code: 10,
