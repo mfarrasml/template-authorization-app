@@ -27,6 +27,7 @@ func ServeRouter(db *sql.DB, config config.Config) error {
 
 	opt := HandlerOpt{
 		userHandler: userHandler,
+		tokenUtil:   tokenUtil,
 	}
 
 	router := NewRouter(opt)

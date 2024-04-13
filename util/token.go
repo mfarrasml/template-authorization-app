@@ -8,7 +8,7 @@ import (
 )
 
 type TokenUtil interface {
-	NewAuthToken(email string) (string, error)
+	NewAuthToken(id int, email string) (string, error)
 	ParseAuthToken(tokenString string) (*UserAuthClaims, error)
 }
 
@@ -33,12 +33,14 @@ func NewJwtTokenUtil(opt JwtTokenOpts) *jwtTokenUtil {
 }
 
 type UserAuthClaims struct {
+	Id    int    `json:"id"`
 	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
 
-func (t *jwtTokenUtil) NewAuthToken(email string) (string, error) {
+func (t *jwtTokenUtil) NewAuthToken(id int, email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, UserAuthClaims{
+		Id:    id,
 		Email: email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -57,7 +59,7 @@ func (t *jwtTokenUtil) NewAuthToken(email string) (string, error) {
 
 func (t *jwtTokenUtil) ParseAuthToken(tokenString string) (*UserAuthClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &UserAuthClaims{}, func(tkn *jwt.Token) (interface{}, error) {
-		return []byte(t.issuer), nil
+		return []byte(t.secret), nil
 	}, jwt.WithIssuer(t.issuer),
 		jwt.WithIssuedAt(),
 		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}),

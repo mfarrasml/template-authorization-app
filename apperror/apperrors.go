@@ -6,8 +6,8 @@ var (
 		code: 1,
 	}
 
-	ErrEmailNotFound = &AppError{
-		err:  "email not found",
+	ErrUserNotFound = &AppError{
+		err:  "user not found",
 		code: 2,
 	}
 
@@ -21,6 +21,21 @@ var (
 		code: 4,
 	}
 
+	ErrInvalidUserId = &AppError{
+		err:  "invalid user id",
+		code: 10,
+	}
+
+	ErrParsingAccessToken = &AppError{
+		err:  "error parsing access token",
+		code: 20,
+	}
+
+	ErrInvalidAccessToken = &AppError{
+		err:  "invalid access token",
+		code: 21,
+	}
+
 	ErrNoRoute = &AppError{
 		err:  "route not found",
 		code: 40,
@@ -29,5 +44,15 @@ var (
 	ErrNoMethod = &AppError{
 		err:  "method not allowed",
 		code: 41,
+	}
+
+	ErrBadRequest = &AppError{
+		err:  "bad request",
+		code: 42,
+	}
+
+	ErrForbidden = &AppError{
+		err:  "user don't have access to this route",
+		code: 43,
 	}
 )
