@@ -26,7 +26,7 @@ func NewUserRepoPostgres(db *sql.DB) *UserRepoPostgres {
 func (r *UserRepoPostgres) FindOneByEmail(ctx context.Context, email string) (*entity.User, error) {
 	q := `
 		SELECT id, user_name, email, password FROM users
-		WHERE email = $1
+		WHERE email = $1 AND deleted_at IS NULL
 	`
 
 	user := entity.User{}
@@ -45,7 +45,7 @@ func (r *UserRepoPostgres) FindOneByEmail(ctx context.Context, email string) (*e
 func (r *UserRepoPostgres) FindOneById(ctx context.Context, id int) (*entity.User, error) {
 	q := `
 		SELECT user_name, email, password, created_at, updated_at FROM users
-		WHERE id = $1
+		WHERE id = $1 AND deleted_at IS NULL
 	`
 
 	user := entity.User{
