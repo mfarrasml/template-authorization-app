@@ -5,10 +5,11 @@ import (
 	"database/sql"
 
 	"github.com/mfarrasml/template-authorization-app/apperror"
+	"github.com/mfarrasml/template-authorization-app/entity"
 )
 
 type RefreshTokenRepository interface {
-	FindOneByJtiId(ctx context.Context, jti string) error
+	FindOneByUserId(ctx context.Context, userId int) (*entity.RefreshToken, error)
 	CreateOne(ctx context.Context, jti string) error
 }
 
@@ -22,22 +23,24 @@ func NewRefreshTokenRepoPostgres(db *sql.DB) *RefreshTokenRepoPostgres {
 	}
 }
 
-func (r *RefreshTokenRepoPostgres) FindOneByJtiId(ctx context.Context, jti string) error {
+func (r *RefreshTokenRepoPostgres) FindOneByUserId(ctx context.Context, userId int) (*entity.RefreshToken, error) {
 	q := `
-		SELECT DISTINCT id FROM refresh_tokens
-		WHERE jti=$1 AND deleted_at IS NULL
+		SELECT DISTINCT id, jti FROM refresh_tokens
+		WHERE user_id=$1 AND deleted_at IS NULL
 		ORDER BY created_at DESC;
 	`
-	var refTokenId string
-	err := r.db.QueryRowContext(ctx, q, jti).Scan(&refTokenId)
+	refToken := entity.RefreshToken{
+		UserId: userId,
+	}
+	err := r.db.QueryRowContext(ctx, q, userId).Scan(&refToken.Id, &refToken.Jti)
 	if err == sql.ErrNoRows {
-		return apperror.ErrRefreshTokenNotFound
+		return nil, apperror.ErrRefreshTokenNotFound
 	}
 	if err != nil {
-		return apperror.ErrInternalServer
+		return nil, apperror.ErrInternalServer
 	}
 
-	return nil
+	return &refToken, nil
 }
 
 func (r *RefreshTokenRepoPostgres) CreateOne(ctx context.Context, jti string) error {

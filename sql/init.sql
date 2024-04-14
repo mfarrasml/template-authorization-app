@@ -3,7 +3,7 @@ CREATE DATABASE authorization_test_db;
 
 -- DDL
 CREATE TABLE users(
-    id BIGSERIAL,
+    id BIGSERIAL PRIMARY KEY,
     user_name VARCHAR,
     email VARCHAR UNIQUE,
     password VARCHAR,
@@ -13,7 +13,8 @@ CREATE TABLE users(
 );
 
 CREATE TABLE refresh_tokens(
-    id BIGSERIAL,
+    id BIGSERIAL PRIMARY KEY,
+    userId BIGINT REFERENCES users(id),
     jti VARCHAR,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
