@@ -12,6 +12,7 @@ import (
 type UserUsecase interface {
 	UserLogin(ctx context.Context, email string, password string) (*string, *string, error)
 	GetOneById(ctx context.Context, id int, authId int) (*entity.User, error)
+	GetTokensByRefToken(ctx context.Context, refToken string) (newAccToken string, newRefToken string, err error)
 }
 
 type UserUcImpl struct {
@@ -51,25 +52,73 @@ func (u *UserUcImpl) UserLogin(ctx context.Context, email string, password strin
 		return nil, nil, apperror.ErrWrongPassword
 	}
 
-	// generate new access token
-	accToken, err := u.tokenUtil.NewAuthToken(user.Id, user.Email)
+	accToken, refToken, jti, err := generateNewTokenPair(user.Id, user.Email, u.tokenUtil)
 	if err != nil {
-		return nil, nil, apperror.ErrAccessToken
-	}
-
-	// also generate new refresh token every login
-	refToken, jti, err := u.tokenUtil.NewRefreshToken(user.Id)
-	if err != nil {
-		return nil, nil, apperror.ErrRefreshToken
+		return nil, nil, err
 	}
 
 	// send refresh token's jti to db
-	err = u.refreshTokenRepo.CreateOne(ctx, jti)
+	err = u.refreshTokenRepo.CreateOne(ctx, jti, user.Id)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	return &accToken, &refToken, nil
+}
+
+func (u *UserUcImpl) GetTokensByRefToken(ctx context.Context, refToken string) (newAccToken string, newRefToken string, err error) {
+	claims, err := u.tokenUtil.ParseRefreshToken(refToken)
+	if err != nil {
+		return
+	}
+
+	refTokenRcrd, err := u.refreshTokenRepo.FindOneByUserId(ctx, claims.UserId)
+	if err != nil {
+		return
+	}
+
+	// check if user's refresh token is the newest (valid) refresh token for said user
+	if refTokenRcrd.Jti != claims.ID {
+		err = apperror.ErrInvalidRefreshToken
+		return
+	}
+
+	user, err := u.userRepo.FindOneById(ctx, refTokenRcrd.UserId)
+	if err != nil {
+		err = apperror.ErrUserNotFound
+		return
+	}
+
+	newAccToken, newRefToken, jti, err := generateNewTokenPair(user.Id, user.Email, u.tokenUtil)
+	if err != nil {
+		return "", "", err
+	}
+
+	// send refresh token's jti to db
+	err = u.refreshTokenRepo.CreateOne(ctx, jti, user.Id)
+	if err != nil {
+		return "", "", err
+	}
+
+	err = nil
+	return
+}
+
+func generateNewTokenPair(userId int, email string, tokenUtil util.TokenUtil) (accToken string, refToken string, refTokenJti string, err error) {
+	// generate new access token
+	accToken, err = tokenUtil.NewAuthToken(userId, email)
+	if err != nil {
+		return "", "", "", apperror.ErrAccessToken
+	}
+
+	// also generate new refresh token every login
+	refToken, refTokenJti, err = tokenUtil.NewRefreshToken(userId)
+	if err != nil {
+		return "", "", "", apperror.ErrRefreshToken
+	}
+
+	err = nil
+	return
 }
 
 func (u *UserUcImpl) GetOneById(ctx context.Context, id int, authId int) (*entity.User, error) {

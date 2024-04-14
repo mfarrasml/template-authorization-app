@@ -38,7 +38,27 @@ func (h *UserHandler) UserLogin(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, dto.Response{
 		Msg:  "ok",
-		Data: dto.NewUserLoginResponse(*accToken, *refToken),
+		Data: dto.NewAuthTokenResponse(*accToken, *refToken),
+	})
+}
+
+func (h *UserHandler) RefreshTokens(ctx *gin.Context) {
+	// handle req
+	req := dto.RefreshTokenRequest{}
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.Error(err)
+	}
+
+	accToken, refToken, err := h.userUc.GetTokensByRefToken(ctx, req.RefreshToken)
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Msg:  "ok",
+		Data: dto.NewAuthTokenResponse(accToken, refToken),
 	})
 }
 

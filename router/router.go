@@ -21,6 +21,7 @@ func NewRouter(opt HandlerOpt) *gin.Engine {
 	router.Use(middleware.ErrorHandler())
 
 	router.POST("/auth/login", opt.userHandler.UserLogin)
+	router.POST("/auth/refresh", opt.userHandler.RefreshTokens)
 
 	authorized := router.Group("/")
 	authorized.Use(middleware.AuthorizationMiddleware(opt.tokenUtil))

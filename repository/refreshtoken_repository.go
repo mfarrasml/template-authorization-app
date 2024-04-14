@@ -10,7 +10,7 @@ import (
 
 type RefreshTokenRepository interface {
 	FindOneByUserId(ctx context.Context, userId int) (*entity.RefreshToken, error)
-	CreateOne(ctx context.Context, jti string) error
+	CreateOne(ctx context.Context, jti string, userId int) error
 }
 
 type RefreshTokenRepoPostgres struct {
@@ -25,9 +25,10 @@ func NewRefreshTokenRepoPostgres(db *sql.DB) *RefreshTokenRepoPostgres {
 
 func (r *RefreshTokenRepoPostgres) FindOneByUserId(ctx context.Context, userId int) (*entity.RefreshToken, error) {
 	q := `
-		SELECT DISTINCT id, jti FROM refresh_tokens
+		SELECT id, jti FROM refresh_tokens
 		WHERE user_id=$1 AND deleted_at IS NULL
-		ORDER BY created_at DESC;
+		ORDER BY created_at DESC
+		LIMIT 1;
 	`
 	refToken := entity.RefreshToken{
 		UserId: userId,
@@ -37,19 +38,19 @@ func (r *RefreshTokenRepoPostgres) FindOneByUserId(ctx context.Context, userId i
 		return nil, apperror.ErrRefreshTokenNotFound
 	}
 	if err != nil {
-		return nil, apperror.ErrInternalServer
+		return nil, err
 	}
 
 	return &refToken, nil
 }
 
-func (r *RefreshTokenRepoPostgres) CreateOne(ctx context.Context, jti string) error {
+func (r *RefreshTokenRepoPostgres) CreateOne(ctx context.Context, jti string, userId int) error {
 	q := `
-		INSERT INTO refresh_tokens(jti)
-		VALUES ($1);
+		INSERT INTO refresh_tokens(jti, user_id)
+		VALUES ($1, $2);
 	`
 
-	_, err := r.db.ExecContext(ctx, q, jti)
+	_, err := r.db.ExecContext(ctx, q, jti, userId)
 	if err != nil {
 		return apperror.ErrInternalServer
 	}

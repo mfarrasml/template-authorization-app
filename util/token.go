@@ -80,7 +80,7 @@ func (t *jwtTokenUtil) ParseAuthToken(tokenString string) (*UserAuthClaims, erro
 	}
 
 	claims, ok := token.Claims.(*UserAuthClaims)
-	if !ok {
+	if !ok && token.Valid {
 		return nil, errors.New("unknown claims")
 	}
 
@@ -121,7 +121,7 @@ func (t *jwtTokenUtil) ParseRefreshToken(tokenString string) (*UserRefreshClaims
 	}
 
 	claims, ok := token.Claims.(*UserRefreshClaims)
-	if !ok {
+	if !ok && token.Valid {
 		return nil, errors.New("unknown claims")
 	}
 

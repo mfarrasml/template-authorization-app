@@ -7,13 +7,13 @@ type UserLoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-type UserLoginResponse struct {
+type AuthTokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
 
-func NewUserLoginResponse(accToken string, refToken string) UserLoginResponse {
-	return UserLoginResponse{
+func NewAuthTokenResponse(accToken string, refToken string) AuthTokenResponse {
+	return AuthTokenResponse{
 		AccessToken:  accToken,
 		RefreshToken: refToken,
 	}

@@ -14,7 +14,7 @@ CREATE TABLE users(
 
 CREATE TABLE refresh_tokens(
     id BIGSERIAL PRIMARY KEY,
-    userId BIGINT REFERENCES users(id),
+    user_id BIGINT REFERENCES users(id),
     jti VARCHAR,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
