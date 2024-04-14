@@ -7,18 +7,6 @@ type UserLoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-type AuthTokenResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-}
-
-func NewAuthTokenResponse(accToken string, refToken string) AuthTokenResponse {
-	return AuthTokenResponse{
-		AccessToken:  accToken,
-		RefreshToken: refToken,
-	}
-}
-
 type GetOneUserResponse struct {
 	Name      string `json:"name"`
 	Email     string `json:"email"`

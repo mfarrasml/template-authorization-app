@@ -32,7 +32,7 @@ func ServeRouter(db *sql.DB, config config.Config) error {
 		TokenUtil:        tokenUtil,
 	}
 	userUc := usecase.NewUserUcImpl(userUcOpt)
-	userHandler := handler.NewUserHandler(userUc)
+	userHandler := handler.NewUserHandler(userUc, config)
 
 	opt := HandlerOpt{
 		userHandler: userHandler,

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mfarrasml/template-authorization-app/apperror"
+	"github.com/mfarrasml/template-authorization-app/config"
 	"github.com/mfarrasml/template-authorization-app/constant"
 	"github.com/mfarrasml/template-authorization-app/dto"
 	"github.com/mfarrasml/template-authorization-app/usecase"
@@ -14,11 +15,13 @@ import (
 
 type UserHandler struct {
 	userUc usecase.UserUsecase
+	config config.Config
 }
 
-func NewUserHandler(userUc usecase.UserUsecase) *UserHandler {
+func NewUserHandler(userUc usecase.UserUsecase, config config.Config) *UserHandler {
 	return &UserHandler{
 		userUc: userUc,
+		config: config,
 	}
 }
 
@@ -38,16 +41,16 @@ func (h *UserHandler) UserLogin(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, dto.Response{
 		Msg:  "ok",
-		Data: dto.NewAuthTokenResponse(*accToken, *refToken),
+		Data: dto.NewAuthTokenResponse(*accToken, h.config.JwtAccTknExpiry(), *refToken),
 	})
 }
 
 func (h *UserHandler) RefreshTokens(ctx *gin.Context) {
-	// handle req
 	req := dto.RefreshTokenRequest{}
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ctx.Error(err)
+		return
 	}
 
 	accToken, refToken, err := h.userUc.GetTokensByRefToken(ctx, req.RefreshToken)
@@ -58,7 +61,7 @@ func (h *UserHandler) RefreshTokens(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, dto.Response{
 		Msg:  "ok",
-		Data: dto.NewAuthTokenResponse(accToken, refToken),
+		Data: dto.NewAuthTokenResponse(accToken, h.config.JwtAccTknExpiry(), refToken),
 	})
 }
 
