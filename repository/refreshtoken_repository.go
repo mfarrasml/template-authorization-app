@@ -8,7 +8,7 @@ import (
 )
 
 type RefreshTokenRepository interface {
-	FindOneByJtiId(ctx context.Context, jti string) (*string, error)
+	FindOneByJtiId(ctx context.Context, jti string) error
 	CreateOne(ctx context.Context, jti string) error
 }
 
@@ -22,22 +22,22 @@ func NewRefreshTokenRepoPostgres(db *sql.DB) *RefreshTokenRepoPostgres {
 	}
 }
 
-func (r *RefreshTokenRepoPostgres) FindOneByJtiId(ctx context.Context, jti string) (*string, error) {
+func (r *RefreshTokenRepoPostgres) FindOneByJtiId(ctx context.Context, jti string) error {
 	q := `
-		SELECT DISTINCT token FROM refresh_tokens
+		SELECT DISTINCT id FROM refresh_tokens
 		WHERE jti=$1 AND deleted_at IS NULL
 		ORDER BY created_at DESC;
 	`
-	var refreshToken string
-	err := r.db.QueryRowContext(ctx, q, jti).Scan(&refreshToken)
+	var refTokenId string
+	err := r.db.QueryRowContext(ctx, q, jti).Scan(&refTokenId)
 	if err == sql.ErrNoRows {
-		return nil, apperror.ErrRefreshTokenNotFound
+		return apperror.ErrRefreshTokenNotFound
 	}
 	if err != nil {
-		return nil, apperror.ErrInternalServer
+		return apperror.ErrInternalServer
 	}
 
-	return &refreshToken, nil
+	return nil
 }
 
 func (r *RefreshTokenRepoPostgres) CreateOne(ctx context.Context, jti string) error {
